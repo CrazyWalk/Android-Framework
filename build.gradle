@@ -1,0 +1,73 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext.versions = [
+            'minSdk'           : 21,
+            'compileSdk'       : 29,
+            'buildToolsVersion': "29.0.3",
+            'controllerVersion':"1.0.0-alpha2"
+    ]
+
+    ext.deps = [
+            'androidx'        : [
+                    'compat'          : "androidx.appcompat:appcompat:1.1.0",
+                    'viewpager'       : "androidx.viewpager:viewpager:1.0.0",
+                    'constraintlayout': "androidx.constraintlayout:constraintlayout:1.1.3",
+                    'lifecycle'       : [
+                            'common': "androidx.lifecycle:lifecycle-common:2.1.0"
+                    ],
+                    'recyclerview'    : "androidx.recyclerview:recyclerview:1.1.0",
+                    'test'            : [
+                            'runner'       : 'androidx.test:runner:1.2.0',
+                            'rules'        : 'androidx.test:rules:1.2.0',
+                            'junit'        : 'androidx.test.ext:junit:1.1.1',
+                            'espresso_core': 'androidx.test.espresso:espresso-core:3.2.0'
+                    ],
+            ],
+            'checkerframework': [
+                    'qual': 'org.checkerframework:checker-qual-android:3.2.0'
+            ],
+            junit             : 'junit:junit:4.12',
+            'logger'          : "com.github.CrazyWalk:Logger:1.0.0",
+            'controller'      : "com.github.CrazyWalk:Controller:${versions.controllerVersion}"
+    ]
+
+
+    repositories {
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        maven { url 'https://jitpack.io' }
+        google()
+        jcenter()
+
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.6.3'
+
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+        maven { url 'https://jitpack.io' }
+        google()
+        jcenter()
+
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+            options {
+                encoding "UTF-8"
+                charSet 'UTF-8'
+                links "http://docs.oracle.com/javase/7/docs/api"
+            }
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
