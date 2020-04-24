@@ -5,7 +5,7 @@ buildscript {
             'minSdk'           : 21,
             'compileSdk'       : 29,
             'buildToolsVersion': "29.0.3",
-            'controllerVersion':"1.0.0-alpha2"
+            'controllerVersion':"1.0.2"
     ]
 
     ext.deps = [

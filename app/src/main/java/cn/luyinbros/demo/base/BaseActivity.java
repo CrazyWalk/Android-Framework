@@ -7,8 +7,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import cn.luyinbros.android.controller.ControllerActivityDelegate;
-import cn.luyinbros.android.controller.ControllerDelegate;
+import cn.luyinbros.valleyframework.controller.ControllerActivityDelegate;
+import cn.luyinbros.valleyframework.controller.ControllerDelegate;
+
 
 public class BaseActivity extends AppCompatActivity {
     private final ControllerActivityDelegate mDelegate = ControllerDelegate.create(this);
