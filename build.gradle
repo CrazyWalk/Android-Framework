@@ -2,10 +2,12 @@
 
 buildscript {
     ext.versions = [
-            'minSdk'           : 21,
-            'compileSdk'       : 29,
-            'buildToolsVersion': "29.0.3",
-            'controllerVersion':"1.0.2"
+            'minSdk'    : 21,
+            'compileSdk': 29,
+            'buildTools': "29.0.3",
+            'controller': "1.0.2",
+            'okhttp'    : "4.4.0",
+            'retrofit'  : "2.8.1"
     ]
 
     ext.deps = [
@@ -24,16 +26,24 @@ buildscript {
                             'espresso_core': 'androidx.test.espresso:espresso-core:3.2.0'
                     ],
             ],
+            'okhttp'          : "com.squareup.okhttp3:okhttp:${versions.okhttp}",
+            'retrofit'        : "com.squareup.retrofit2:retrofit:${versions.retrofit}",
+            'rx'        : [
+                    'java'   : "io.reactivex.rxjava3:rxjava:3.0.1",
+                    'android': "io.reactivex.rxjava3:rxandroid:3.0.0"
+            ],
+            'gson'      : "com.google.code.gson:gson:2.8.6",
             'checkerframework': [
                     'qual': 'org.checkerframework:checker-qual-android:3.2.0'
             ],
             junit             : 'junit:junit:4.12',
             'logger'          : "com.github.CrazyWalk:Logger:1.0.0",
-            'controller'      : "com.github.CrazyWalk:Controller:${versions.controllerVersion}"
+            'controller'      : "com.github.CrazyWalk:Controller:${versions.controller}"
     ]
 
 
     repositories {
+        // download slowly from maven in china. use it
         maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
         maven { url 'https://jitpack.io' }
         google()
@@ -52,19 +62,12 @@ buildscript {
 
 allprojects {
     repositories {
+        // download slowly from maven in china. use it
         maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
         maven { url 'https://jitpack.io' }
         google()
         jcenter()
 
-        tasks.withType(Javadoc) {
-            options.addStringOption('Xdoclint:none', '-quiet')
-            options {
-                encoding "UTF-8"
-                charSet 'UTF-8'
-                links "http://docs.oracle.com/javase/7/docs/api"
-            }
-        }
     }
 }
 

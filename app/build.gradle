@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
 
     defaultConfig {
         applicationId "cn.luyinbros.demo"
-        minSdkVersion 21
-        targetSdkVersion 29
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.compileSdk
         versionCode 1
         versionName "1.0"
 
@@ -28,6 +28,7 @@ android {
 }
 
 dependencies {
+    //androidx
     implementation deps.androidx.compat
     implementation deps.androidx.recyclerview
     implementation deps.androidx.constraintlayout
@@ -37,7 +38,15 @@ dependencies {
     //controller
     implementation deps.controller
     annotationProcessor deps.controller
-    //implementation deps.controller.annotation
+    //http
+    implementation deps.okhttp
+    //interface delegate http
+    implementation deps.retrofit
+    //rx
+    implementation deps.rx.java
+    implementation deps.rx.android
+    //json by gson
+    implementation deps.gson
 
 
     testImplementation deps.junit
