@@ -11,10 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.WeakHashMap;
 
 import cn.luyinbros.demo.base.task.core.AsyncValue;
 import cn.luyinbros.demo.base.task.core.OnTaskListener;
 import cn.luyinbros.demo.base.task.core.Task;
+import cn.luyinbros.logger.AndroidLoggerProvider;
+import cn.luyinbros.logger.Logger;
+import cn.luyinbros.logger.LoggerFactory;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableEmitter;
@@ -27,13 +31,14 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public abstract class ControllerTask<T> implements Task<T, ControllerTaskException> {
     private static final TaskDispatcher mTaskDispatcher = new TaskDispatcher();
+    private static final Logger log = LoggerFactory.getLogger(ControllerTask.class);
 
-    public abstract void setTaskName(String taskName);
+    public abstract ControllerTask<T> setTaskName(String taskName);
 
 
     @UiThread
-    public static <T> ControllerTask<T> create(@NonNull AsyncValue<T> asyncValue,
-                                               @NonNull LifecycleOwner lifecycleOwner) {
+    public static <T> ControllerTask<T> create(@NonNull LifecycleOwner lifecycleOwner,
+                                               @NonNull AsyncValue<T> asyncValue) {
         return new ControllerTaskImpl<>(
                 mTaskDispatcher.getOrCreateTaskProvider(lifecycleOwner.getLifecycle()),
                 asyncValue);
@@ -46,7 +51,8 @@ public abstract class ControllerTask<T> implements Task<T, ControllerTaskExcepti
         private AsyncValue<T> asyncValue;
         private Disposable mDisposable;
         private boolean isDisposed = false;
-        private String taskName;
+        private boolean isCancel = true;
+        private String taskName = "NO_NAME_TASK";
         private boolean isSetTaskName;
 
         private ControllerTaskImpl(TaskProvider taskProvider,
@@ -56,18 +62,20 @@ public abstract class ControllerTask<T> implements Task<T, ControllerTaskExcepti
         }
 
         @Override
-        public void setTaskName(String taskName) {
+        public ControllerTask<T> setTaskName(String taskName) {
             if (isSetTaskName) {
                 throw new IllegalStateException();
             }
             this.taskName = taskName;
             isSetTaskName = true;
+            return this;
         }
 
         @Override
         public void execute() {
             execute(null);
         }
+
 
         @Override
         public void execute(OnTaskListener<T, ControllerTaskException> listener) {
@@ -78,21 +86,16 @@ public abstract class ControllerTask<T> implements Task<T, ControllerTaskExcepti
             if (!isCancel()) {
                 return;
             }
-            if (!isSetTaskName) {
-                setTaskName("");
-            }
+            isSetTaskName = true;
+            isCancel = false;
+            taskProvider.addTask(taskName, this);
 
-            if (!taskName.isEmpty()) {
-                ControllerTaskImpl controllerTask = taskProvider.getRunningTask(taskName);
-                if (controllerTask != null) {
-                    controllerTask.dispose();
+            Observable.create(new ObservableOnSubscribe<T>() {
+                @Override
+                public void subscribe(ObservableEmitter<T> emitter) throws Throwable {
+                    emitter.onNext(asyncValue.value());
+                    emitter.onComplete();
                 }
-
-            }
-
-            Observable.create((ObservableOnSubscribe<T>) emitter -> {
-                emitter.onNext(asyncValue.value());
-                emitter.onComplete();
             })
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -125,14 +128,16 @@ public abstract class ControllerTask<T> implements Task<T, ControllerTaskExcepti
 
         @Override
         public void cancel() {
-            if (!isCancel()) {
+            if (!isCancel) {
+                taskProvider.removeTask(taskName);
                 mDisposable.dispose();
+                isCancel = true;
             }
         }
 
         @Override
         public boolean isCancel() {
-            return isDisposed || mDisposable == null || mDisposable.isDisposed();
+            return isCancel;
         }
 
         @Override
@@ -159,6 +164,7 @@ public abstract class ControllerTask<T> implements Task<T, ControllerTaskExcepti
 
         @Override
         public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
+            log.debug(taskName + " task " + event);
             if (event == Lifecycle.Event.ON_DESTROY) {
                 cancel();
             }
@@ -200,7 +206,7 @@ public abstract class ControllerTask<T> implements Task<T, ControllerTaskExcepti
 
     private static class TaskProvider implements LifecycleEventObserver {
         private final Lifecycle lifecycle;
-        private final Map<String, ControllerTaskImpl> runningTask = new HashMap<>();
+        private final Map<String, ControllerTaskImpl> runningTask = new WeakHashMap<>();
 
 
         TaskProvider(Lifecycle lifecycle) {
@@ -208,8 +214,24 @@ public abstract class ControllerTask<T> implements Task<T, ControllerTaskExcepti
             lifecycle.addObserver(this);
         }
 
-        public ControllerTaskImpl getRunningTask(String taskName) {
+
+        ControllerTaskImpl getRunningTask(String taskName) {
             return runningTask.get(taskName);
+        }
+
+        void addTask(String taskName, ControllerTaskImpl controllerTask) {
+            runningTask.put(taskName, controllerTask);
+            lifecycle.addObserver(controllerTask);
+
+        }
+
+        void removeTask(String taskName) {
+            ControllerTaskImpl task = runningTask.get(taskName);
+            if (task != null) {
+                lifecycle.removeObserver(task);
+            }
+            runningTask.remove(taskName);
+
         }
 
 

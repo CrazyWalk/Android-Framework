@@ -49,7 +49,7 @@ public class RemoteRepositoryClient implements RemoteRepositoryFactory {
             this.application = application;
 
             defaultRetrofit = new Retrofit.Builder()
-                    .baseUrl("http://localhost:")
+                    .baseUrl("http://192.168.2.100:10010/")
                     .client(new OkHttpClient.Builder()
                             .build())
                     .addConverterFactory(GsonConverterFactory.create())

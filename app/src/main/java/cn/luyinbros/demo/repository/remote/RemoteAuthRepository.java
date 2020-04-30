@@ -7,6 +7,6 @@ import retrofit2.http.Query;
 public interface RemoteAuthRepository {
 
     @GET("login")
-    EmptyObject login(@Query("username") String username,
+    EmptyObject login(@Query("phone") String username,
                       @Query("password") String password);
 }
