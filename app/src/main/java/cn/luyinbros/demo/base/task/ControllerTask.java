@@ -108,13 +108,13 @@ public abstract class ControllerTask<T> implements Task<T, ControllerTaskExcepti
 
                         @Override
                         public void onNext(T t) {
-                            listener.onNext(t);
                             dispatchNext(listener, t);
                             cancel();
                         }
 
                         @Override
                         public void onError(Throwable e) {
+                            e.printStackTrace();
                             dispatchError(listener, e);
                             cancel();
                         }
@@ -164,7 +164,7 @@ public abstract class ControllerTask<T> implements Task<T, ControllerTaskExcepti
 
         @Override
         public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
-            log.debug(taskName + " task " + event);
+          //  log.debug(taskName + " task " + event);
             if (event == Lifecycle.Event.ON_DESTROY) {
                 cancel();
             }

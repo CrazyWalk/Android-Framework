@@ -17,6 +17,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
+import cn.luyinbros.demo.repository.data.EmptyObject;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -49,6 +50,7 @@ public class GsonConverterFactory extends Converter.Factory {
             Annotation[] parameterAnnotations,
             Annotation[] methodAnnotations,
             Retrofit retrofit) {
+
         TypeAdapter<?> adapter = gson.getAdapter(TypeToken.get(type));
         return new RequestBodyConvert<>(gson, adapter);
     }
@@ -63,8 +65,12 @@ public class GsonConverterFactory extends Converter.Factory {
             this.adapter = adapter;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public T convert(@NonNull ResponseBody value) throws IOException {
+            if (value.contentLength() == 0) {
+                return (T) EmptyObject.INSTANCE;
+            }
             JsonReader jsonReader = gson.newJsonReader(value.charStream());
             try {
                 T result = adapter.read(jsonReader);
@@ -98,7 +104,7 @@ public class GsonConverterFactory extends Converter.Factory {
             JsonWriter jsonWriter = gson.newJsonWriter(writer);
             adapter.write(jsonWriter, value);
             jsonWriter.close();
-            return RequestBody.create(MEDIA_TYPE, buffer.readByteString());
+            return RequestBody.create(buffer.readByteString(), MEDIA_TYPE);
         }
     }
 }

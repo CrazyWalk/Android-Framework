@@ -10,9 +10,12 @@ import cn.luyinbros.demo.base.task.ControllerTask;
 import cn.luyinbros.demo.base.task.ControllerTaskException;
 import cn.luyinbros.demo.base.task.OnSimpleTaskListener;
 import cn.luyinbros.demo.base.task.core.AsyncValue;
+import cn.luyinbros.demo.domain.DomainClient;
 import cn.luyinbros.demo.repository.RemoteRepositoryClient;
 import cn.luyinbros.demo.repository.RemoteRepositoryFactory;
 import cn.luyinbros.demo.repository.data.EmptyObject;
+import cn.luyinbros.logger.Logger;
+import cn.luyinbros.logger.LoggerFactory;
 import cn.luyinbros.valleyframework.controller.annotation.BindView;
 import cn.luyinbros.valleyframework.controller.annotation.Controller;
 import cn.luyinbros.valleyframework.controller.annotation.OnClick;
@@ -23,7 +26,7 @@ public class LoginActivity extends BaseActivity {
     EditText accountEditText;
     @BindView(R.id.passwordEditText)
     EditText passwordEditText;
-
+    private Logger logger= LoggerFactory.getLogger(LoginActivity.class);
 
     @OnClick(R.id.loginButton)
     void onLoginClick() {
@@ -32,8 +35,8 @@ public class LoginActivity extends BaseActivity {
                 new AsyncValue<EmptyObject>() {
                     @Override
                     public EmptyObject value() throws Throwable {
-                        return RemoteRepositoryClient.getInstance(getApplicationContext())
-                                .authRepository()
+                        return DomainClient.getInstance(getApplicationContext())
+                                .userCase()
                                 .login(accountEditText.getText().toString(),
                                         passwordEditText.getText().toString());
                     }
@@ -42,12 +45,12 @@ public class LoginActivity extends BaseActivity {
                 .execute(new OnSimpleTaskListener<EmptyObject, ControllerTaskException>() {
                     @Override
                     public void onNext(@NonNull EmptyObject value) {
-
+                        logger.debug("login success");
                     }
 
                     @Override
                     public void onError(@NonNull ControllerTaskException exception) {
-
+                        logger.debug("login failure");
                     }
                 });
     }
